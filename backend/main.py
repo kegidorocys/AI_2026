@@ -9,11 +9,6 @@ from psycopg2.extras import RealDictCursor
 
 app = FastAPI(title="2026 AI Time-Series API")
 
-# 1. 允許前端 React 跨網域訪問 (CORS 標配)
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
 
 # 💡 【優化點】明確指定允許存取的前端域名（白名單）
 origins = [
