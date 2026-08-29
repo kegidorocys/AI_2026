@@ -10,8 +10,23 @@ from psycopg2.extras import RealDictCursor
 app = FastAPI(title="2026 AI Time-Series API")
 
 # 1. 允許前端 React 跨網域訪問 (CORS 標配)
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# 💡 【優化點】明確指定允許存取的前端域名（白名單）
+origins = [
+    "https://ai-2026-214i.vercel.app", # 你的實體前端網址
+    "http://localhost:3000",          # 預留本地測試環境
+]
+
 app.add_middleware(
-    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
+    CORSMiddleware,
+    allow_origins=origins,             # 綁定白名單
+    allow_credentials=True,
+    allow_methods=["*"],               # 允許所有 HTTP 方法 (GET, POST 等)
+    allow_headers=["*"],               # 允許所有標頭
 )
 
 # 2. 載入輕量化模型 (免安裝重型 TensorFlow，記憶體僅佔 20MB)
