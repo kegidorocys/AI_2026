@@ -12,7 +12,7 @@ app = FastAPI(title="2026 AI Time-Series API")
 
 # 💡 【優化點】明確指定允許存取的前端域名（白名單）
 origins = [
-    "https://ai-2026-214i.vercel.app", # 你的實體前端網址
+    "https://ai-2026-i596.vercel.app", # 你的實體前端網址
     "http://localhost:3000",          # 預留本地測試環境
 ]
 
