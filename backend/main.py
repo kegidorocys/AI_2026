@@ -65,22 +65,22 @@ async def get_metrics(server_id: int):
     #     current_input = np.append(current_input[:, 1:, :], [[[pred_value]]], axis=1).astype(np.float32)
 
     for _ in range(3):
-    pred = ort_session.run(None, {input_name: current_input})[0]
-    # 1. 這是 ONNX 吐出來的 0~1 之間的小數原廠值
-    raw_pred_value = float(pred[0][0]) 
-    
-    # 💡 【核心修復：特徵反向還原】
-    # 將 0~1 的小數乘以 60.0，將其映射回 0~100% 之間的真實 CPU 百分比
-    # (你可以根據你藍色歷史線的大約高度，把 60.0 改成 50.0 或 70.0，讓線對得更齊)
-    restored_pred_value = raw_pred_value * 60.0 
-    
-    # 2. 將還原後的實體業務數值（如 64.8%）傳給前端 React 畫圖
-    predictions.append(restored_pred_value)
-    
-    # 💡 【自迴歸防禦性注意】
-    # 倒回矩陣給下一步 AI 用的，必須維持是「歸一化的小數 (raw_pred_value)」！
-    # 因為你的 LSTM 大腦在 Day 2 只認得 0~1 之間的特徵，絕對不能把 60.0 倒回去！
-    current_input = np.append(current_input[:, 1:, :], [[[raw_pred_value]]], axis=1).astype(np.float32)
+        pred = ort_session.run(None, {input_name: current_input})[0]
+        # 1. 這是 ONNX 吐出來的 0~1 之間的小數原廠值
+        raw_pred_value = float(pred[0][0]) 
+        
+        # 💡 【核心修復：特徵反向還原】
+        # 將 0~1 的小數乘以 60.0，將其映射回 0~100% 之間的真實 CPU 百分比
+        # (你可以根據你藍色歷史線的大約高度，把 60.0 改成 50.0 或 70.0，讓線對得更齊)
+        restored_pred_value = raw_pred_value * 60.0 
+        
+        # 2. 將還原後的實體業務數值（如 64.8%）傳給前端 React 畫圖
+        predictions.append(restored_pred_value)
+        
+        # 💡 【自迴歸防禦性注意】
+        # 倒回矩陣給下一步 AI 用的，必須維持是「歸一化的小數 (raw_pred_value)」！
+        # 因為你的 LSTM 大腦在 Day 2 只認得 0~1 之間的特徵，絕對不能把 60.0 倒回去！
+        current_input = np.append(current_input[:, 1:, :], [[[raw_pred_value]]], axis=1).astype(np.float32)
 
 
     cursor.close()
