@@ -8,7 +8,7 @@ function App() {
 
   useEffect(() => {
     // 💡 【請更換為你 Day 3 部署在 Render.com 的真實後端網址】
-    const BACKEND_API = 'https://ai-2026-fsp3.onrender.com/api/metrics?server_id=1';
+    const BACKEND_API = 'https://ai-2026-i596.onrender.com/api/metrics?server_id=1';
 
     fetch(BACKEND_API)
       .then((res) => {
