@@ -12,7 +12,7 @@ app = FastAPI(title="2026 AI Time-Series API")
 
 # 1. 跨域資源共享 (CORS) 設定：允許前端存取
 origins = [
-    "https://ai-2026-8koj-2weui5xhu-ai-2032.vercel.app",  # Vercel 生產環境前端網址
+    "https://ai-2026-8koj.vercel.app",  # Vercel 生產環境前端網址
     "http://localhost:3000",             # 本地開發測試環境
 ]
 
