@@ -27,29 +27,35 @@ function App() {
           // 1. 解析歷史資料的時間
           resData.history.forEach((h) => {
             chartRows.push({
-              // 使用資料庫回傳的 ISO 時間字串轉成當地時間 format (例: 10:00 AM)
               time: new Date(h.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              cpu: parseFloat(h.avg_cpu).toFixed(1),
+              cpu: Number(parseFloat(h.avg_cpu).toFixed(1)), // 💡 轉回 Number 保持資料型態一致
               prediction: null
             });
           });
           
-          // 2. 以歷史最後一筆時間 (2026-11-26T10:00:00) 為起點往後推算預測時間
+          // 2. 以歷史最後一筆時間為起點往後推算預測時間
           const lastTimeObj = new Date(resData.history[resData.history.length - 1].time);
           const lastHistoryRow = chartRows[chartRows.length - 1];
           
+          let alertTriggered = false; // 💡 1. 宣告警報觸發變數
+
           resData.predictions.forEach((p, index) => {
-            // 依據歷史最後時間點 + (1, 2, 3 小時)
             const nextTime = new Date(lastTimeObj.getTime() + (index + 1) * 60 * 60 * 1000);
-            const pValue = parseFloat(p).toFixed(1);
+            const pValue = Number(parseFloat(p).toFixed(1)); // 💡 轉回 Number
+
+            // 💡 2. 檢查預測值是否超過警戒線 (85%)
+            if (pValue > 85) {
+              alertTriggered = true;
+            }
           
             chartRows.push({
               time: nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " (AI預測)",
-              cpu: index === 0 ? lastHistoryRow.cpu : null, // 銜接點 (第一筆與歷史最後一筆數值相等)
+              cpu: index === 0 ? lastHistoryRow.cpu : null, // 銜接點：第一筆預測點帶入歷史最後一筆值
               prediction: index === 0 ? lastHistoryRow.cpu : pValue
             });
           });
-          setHasAlert(alertTriggered);
+
+          setHasAlert(alertTriggered); // 💡 3. 更新 Alert 狀態
           setData(chartRows);
           setLoading(false);
         })
@@ -59,14 +65,10 @@ function App() {
         });
     };
 
-    // 1. 組件載入時立即執行第一次獲取
     fetchData();
+    const timer = setInterval(fetchData, 5000); // 每 5 秒自動跟伺服器同步數據
 
-    // 2. 設定定時器：每 5 秒自動跟伺服器同步一次當前時間與數據
-    const timer = setInterval(fetchData, 5000);
-
-    // 3. 清理定時器，避免組件銷毀後導致記憶體洩漏
-    return () => clearInterval(timer);
+    return () => clearInterval(timer); // 清理定時器，防止內存洩漏
   }, []);
 
   if (loading) {
