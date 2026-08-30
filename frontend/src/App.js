@@ -24,38 +24,31 @@ function App() {
 
           const chartRows = [];
 
-          // 1. 解析歷史數據
+          // 1. 解析歷史資料的時間
           resData.history.forEach((h) => {
             chartRows.push({
+              // 使用資料庫回傳的 ISO 時間字串轉成當地時間 format (例: 10:00 AM)
               time: new Date(h.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               cpu: parseFloat(h.avg_cpu).toFixed(1),
               prediction: null
             });
           });
-
-          // 2. 取得「現實當前時間」與「最後一筆歷史數據」作為銜接點
-          const now = new Date();
+          
+          // 2. 以歷史最後一筆時間 (2026-11-26T10:00:00) 為起點往後推算預測時間
+          const lastTimeObj = new Date(resData.history[resData.history.length - 1].time);
           const lastHistoryRow = chartRows[chartRows.length - 1];
-          let alertTriggered = false;
-
-          // 3. 以現實時間（now）為基準，推算未來的 AI 預測數據
-          if (resData.predictions && resData.predictions.length > 0) {
-            resData.predictions.forEach((p, index) => {
-              // 💡 以當前時間點向後推算（預設每筆推算 1 小時）
-              const futureTime = new Date(now.getTime() + (index + 1) * 60 * 60 * 1000);
-              const pValue = parseFloat(p).toFixed(1);
-
-              chartRows.push({
-                time: futureTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " (AI預測)",
-                // 銜接點：第一筆預測點需同步帶入歷史最後值，讓實線與虛線完美黏合
-                cpu: index === 0 ? lastHistoryRow.cpu : null,
-                prediction: index === 0 ? lastHistoryRow.cpu : pValue
-              });
-
-              if (p > 85) alertTriggered = true;
+          
+          resData.predictions.forEach((p, index) => {
+            // 依據歷史最後時間點 + (1, 2, 3 小時)
+            const nextTime = new Date(lastTimeObj.getTime() + (index + 1) * 60 * 60 * 1000);
+            const pValue = parseFloat(p).toFixed(1);
+          
+            chartRows.push({
+              time: nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " (AI預測)",
+              cpu: index === 0 ? lastHistoryRow.cpu : null, // 銜接點 (第一筆與歷史最後一筆數值相等)
+              prediction: index === 0 ? lastHistoryRow.cpu : pValue
             });
-          }
-
+          });
           setHasAlert(alertTriggered);
           setData(chartRows);
           setLoading(false);
