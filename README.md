@@ -11,11 +11,14 @@ Predictive Analytics: Runs autoregressive multi-step forecasting using an ONNX-r
 Visualization: Presents historical metrics and model predictions via a React dashboard with configurable threshold alerts.
 
 System Architecture
-[ PostgreSQL (Neon) ] ──(Indexed Aggregation)──► [ FastAPI ]
-                                                     │
-                                             (ONNX Runtime)
-                                                     │
-[ React Dashboard ]   ◄───────(JSON API)─────────────┘
+[ Neon PostgreSQL ] (1 Million + Records)
+       │
+       ▼ (Compound Index Query < 20ms)
+[ FastAPI Backend ] ───► [ ONNX Model Inference ] ───► (Autoregressive Predictions)
+       │
+       ▼ (REST API / CORS Allowed)
+[ React + Recharts ] ───► (Live Dashboard with Brush & Dynamic Alert)
+
 Technical Stack & Dependencies
 Backend: FastAPI, PyTorch / ONNX Runtime, NumPy, Psycopg2
 
